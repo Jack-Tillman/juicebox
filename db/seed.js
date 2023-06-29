@@ -8,7 +8,8 @@ This file will build and rebuild tables and fill them with starting data
 const {
     client,
     getAllUsers,
-    createUser
+    createUser,
+    updateUser
  } = require('./index');
 
 async function createInitialUsers() {
@@ -16,13 +17,13 @@ async function createInitialUsers() {
         console.log("Starting to create users...");
 
         const albert = await createUser(
-            { username: 'albert', password: 'bertie99' });
+            { username: 'albert', password: 'bertie99', name: "albert", location:"albert-house" });
 
         const sandra = await createUser(
-            {username: 'sandra', password: '2sandy4me'});
+            {username: 'sandra', password: '2sandy4me', name: "sandy", location:"beach"});
         
             const glamgal = await createUser(
-                {username:'glamgal', password: 'soglam'});
+                {username:'glamgal', password: 'soglam', name: "glamgorl", location:"glam-house"});
             
         console.log("Finished creating users");
     } catch (error) {
@@ -30,6 +31,16 @@ async function createInitialUsers() {
         throw error;
     }
 }
+
+// async function updateCurrentUser() {
+//     try {
+//         console.log("Starting to update users...");
+
+//         const newUser = await updateUser(
+//             {id: 'id', fields: '{fields}'}
+//             )
+//     }
+// }
  
 //this will drop all tables within our database - use CAREFULLY
 async function dropTables() {
@@ -50,12 +61,16 @@ async function dropTables() {
 async function createTables() {
     try {
         console.log("Starting to build tables...");
-
+        //setting DEFAULT true for active means that our table will set the value of
+        // active for us automatically when the user is inserted 
         await client.query(`
         CREATE TABLE users (
             id SERIAL PRIMARY KEY,
-            username varchar(255) UNIQUE NOT NULL,
-            password varchar(255) NOT NULL
+            username VARCHAR(255) UNIQUE NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            location VARCHAR(255) NOT NULL,
+            active BOOLEAN DEFAULT true
         );
         `);
 
@@ -81,10 +96,17 @@ async function rebuildDB() {
 async function testDB() {
     try {
       console.log("Starting to test database...");
-  
+        
       const users = await getAllUsers();
       console.log("getAllUsers:", users);
   
+      console.log("Calling updateUser on users[0]");
+      const updateUserResult = await updateUser(users[0].id, {
+        name: "Newname Sogood",
+        location: "Lesterville, KY"
+      });
+      console.log("Result:", updateUserResult);
+
       console.log("Finished database tests!");
     } catch (error) {
       console.error("Error testing database!");
