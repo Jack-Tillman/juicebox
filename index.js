@@ -6,3 +6,4 @@
 // \dt -> list all tables 
 // \c database_name -> connect to a database 
 // \q -> quit PSQL 
+// \conninfo -> print info about current db connection

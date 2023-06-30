@@ -9,7 +9,8 @@ const {
     client,
     getAllUsers,
     createUser,
-    updateUser
+    updateUser,
+    createPost
  } = require('./index');
 
 async function createInitialUsers() {
@@ -32,23 +33,13 @@ async function createInitialUsers() {
     }
 }
 
-// async function updateCurrentUser() {
-//     try {
-//         console.log("Starting to update users...");
-
-//         const newUser = await updateUser(
-//             {id: 'id', fields: '{fields}'}
-//             )
-//     }
-// }
- 
 //this will drop all tables within our database - use CAREFULLY
 async function dropTables() {
     try {
         console.log("Starting to drop tables...");
 
         await client.query(`
-        DROP TABLE IF EXISTS users; 
+        DROP TABLE IF EXISTS posts, users; 
         `);
         
         console.log("Finished dropping tables!");
@@ -81,12 +72,37 @@ async function createTables() {
     }
 }
 
+async function createPostsTables() {
+    try {
+        console.log("Starting to build posts tables...");
+        //setting DEFAULT true for active means that our table will set the value of
+        // active for us automatically when the user is inserted 
+        await client.query(`
+        CREATE TABLE posts (
+            id SERIAL PRIMARY KEY,
+            "authorId" INTEGER REFERENCES users(id) NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            content TEXT NOT NULL,
+            active BOOLEAN DEFAULT true
+        );
+        `);
+
+        console.log("Finished building posts tables!");
+    } catch (error) {
+        console.error("Error building posts tables!");
+        throw error; // pass error up to the function that calls createTables
+    }
+}
+
+
 async function rebuildDB() {
     try{
         client.connect();
 
         await dropTables();
         await createTables();
+        await createPostsTables();
+        await createPost();
         await createInitialUsers();
     } catch (error) {
         throw error;
@@ -96,14 +112,15 @@ async function rebuildDB() {
 async function testDB() {
     try {
       console.log("Starting to test database...");
-        
+      
+      console.log("Calling getAllUsers")
       const users = await getAllUsers();
-      console.log("getAllUsers:", users);
+      console.log("Result:", users);
   
       console.log("Calling updateUser on users[0]");
       const updateUserResult = await updateUser(users[0].id, {
-        name: "Newname Sogood",
-        location: "Lesterville, KY"
+        name: 'Newname Sogood',
+        location: 'Lesterville, KY'
       });
       console.log("Result:", updateUserResult);
 
@@ -119,3 +136,4 @@ rebuildDB()
   .then(testDB)
   .catch(console.error)
   .finally(() => client.end());
+  //client.end closes the client
