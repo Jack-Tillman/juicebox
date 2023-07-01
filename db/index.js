@@ -162,6 +162,41 @@ async function getPostsByUser(userId) {
 }
 
 
+async function createTags(tagList) {
+  //escape immediately if no tags in tag list
+  if (tagList.length === 0) {
+    return;
+  }
+
+ // build the set string
+  const insertValues = tagList.map(
+  (_, index) => `$${index + 1}`).join('), (');
+
+  const selectValues = tagList.map(
+    (_, index) => `$${index + 1}`).join(', ');
+
+  try {
+      console.log("Beginning to create tags...");
+
+      await client.query(`
+      INSERT INTO tags(name)
+      VALUES (${insertValues})
+      ON CONFLICT (name) DO NOTHING;
+      `, tagList);
+
+      const { rows } = await client.query(`
+      SELECT * FROM tags
+      WHERE name
+      IN (${selectValues});
+      `, tagList);
+
+      return rows;
+  } catch (error) {
+      console.error(error);
+      throw error;
+  }
+}
+
 
 module.exports = {
   client,
@@ -171,5 +206,6 @@ module.exports = {
   createPost,
   updatePost,
   getAllPosts,
-  getUserById
+  getUserById,
+  createTags
 };
