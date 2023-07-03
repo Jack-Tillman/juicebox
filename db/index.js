@@ -193,7 +193,7 @@ async function createTags(tagList) {
       throw error;
   }
 }
-
+//step 3 : adding tags to posts - error even though I seem to have done things correctly - very predictable! 
 async function createPostTag(postId, tagId) {
   try {
     await client.query(`
@@ -208,12 +208,12 @@ async function createPostTag(postId, tagId) {
 
 async function addTagsToPost(postId, tagList) {
   try {
-    const createPostTagPromises = tagList.map(
-      tag => createPostTag(postId, tag.id)
+    const createPostTagPromises = tagList.map((
+      tag) => createPostTag(postId, tag.id)
     );
-
-    await Promise.all(createPostTagPromises);
-
+    console.log("createPostTagPromises: ", createPostTagPromises);
+    let promised = await Promise.all(createPostTagPromises);
+    console.log(promised);
     return await getPostById(postId);
   } catch (error) {
     throw error;
