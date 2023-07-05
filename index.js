@@ -1,5 +1,9 @@
-// this is where express app will be 
+//NOTE: Whenever you work with the database, make sure the server is actually running 
+// AND that you've gotten the relevant data, i.e., SELECT * from *;
 
+
+
+// this is where express app will be 
 const PORT = 3000;
 const express = require('express');
 const server = express();
@@ -11,7 +15,7 @@ server.use(morgan('dev'));
 //reads incoming JSON from requests, as long as the request's header has Content-Type: application/json 
 server.use(express.json());
 //body logging
-server.use('/', (req, res, next) => {
+server.use( (req, res, next) => {
   console.log("<____Body Logger START____>");
   console.log(req.body);
   console.log("<_____Body Logger END_____>");
@@ -20,10 +24,6 @@ server.use('/', (req, res, next) => {
 });
 //any request made to a path starting with /api will be handled by apiRouter 
 server.use('/api', apiRouter);
-
-
-
-
 
 const { client } = require('./db');
 client.connect();

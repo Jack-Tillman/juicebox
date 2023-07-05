@@ -11,12 +11,12 @@ usersRouter.use((req, res, next) => {
 });
 //middleware will fire when a GET request is made to /api/users, and return a simple object with an empty array 
 usersRouter.get('/', async (req, res) => {
-    const users = await getAllUsers(); 
-    
-    res.send({
-      users: []
-    });
+  const users = await getAllUsers();
+
+  res.send({
+    users
   });
+});
   
 
 module.exports = usersRouter;
