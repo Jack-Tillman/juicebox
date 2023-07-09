@@ -102,4 +102,8 @@ module.exports = usersRouter;
 
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwidXNlcm5hbWUiOiJzeXp5Z3lzIiwiaWF0IjoxNjg4OTI1NDk4LCJleHAiOjE2ODk1MzAyOTh9.n7Mz2OSGPQL41Fb0J9YaihE7uFwBVYfGQf9zXxF4Qxo
 
+curl http://localhost:3000/api -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwidXNlcm5hbWUiOiJzeXp5Z3lzIiwiaWF0IjoxNjg4OTI1NDk4LCJleHAiOjE2ODk1MzAyOTh9.n7Mz2OSGPQL41Fb0J9YaihE7uFwBVYfGQf9zXxF4Qxo'
+
+curl http://localhost:3000/api/users/login -H "Content-Type: application/json" -X POST -d '{"username": "syzygys", "password": "stars"}'
+
 */
