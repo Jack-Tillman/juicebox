@@ -22,6 +22,16 @@ server.use( (req, res, next) => {
 
   next();
 });
+
+/*
+whatever is in the :first param will be added to whatever is in :second param 
+server.get('/add/:first/to/:second', (req, res, next) => {
+  res.send(`<h1>${ req.params.first } + ${ req.params.second } = ${
+    Number(req.params.first) + Number(req.params.second)
+   }</h1>`);
+});
+*/
+
 //any request made to a path starting with /api will be handled by apiRouter 
 server.use('/api', apiRouter);
 
