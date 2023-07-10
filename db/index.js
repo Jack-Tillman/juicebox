@@ -8,7 +8,8 @@ certain routes, and make requests to the database as well.
 const { Client } = require("pg"); // imports the pg module
 
 //supply the database name and location
-const client = new Client("postgres://localhost:5432/juicebox-dev");
+const client = new Client({
+  connectionString: process.env.DATABASE_URL || "postgres://localhost:5432/juiceboxdb"});
 
 async function createUser({ username, password, name, location }) {
   try {
