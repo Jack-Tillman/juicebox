@@ -73,6 +73,30 @@ postsRouter.patch('/:postId', requireUser, async (req, res, next) => {
   }
 });
 
+postsRouter.delete('/:postId', requireUser, async (req, res, next) => {
+  try {
+    const post = await getPostById(req.params.postId);
+
+    if (post && post.author.id === req.user.id) {
+      const updatedPost = await updatePost(post.id, { active: false });
+
+      res.send({ post: updatedPost });
+    } else {
+      // if there was a post, throw UnauthorizedUserError, otherwise throw PostNotFoundError
+      next(post ? { 
+        name: "UnauthorizedUserError",
+        message: "You cannot delete a post which is not yours"
+      } : {
+        name: "PostNotFoundError",
+        message: "That post does not exist"
+      });
+    }
+
+  } catch ({ name, message }) {
+    next({ name, message })
+  }
+});
+
 postsRouter.use((req, res, next) => {
     console.log("A request is being made to /posts");
   
@@ -81,26 +105,29 @@ postsRouter.use((req, res, next) => {
 
 
 postsRouter.get('/', async (req, res) => {
-  const posts = await getAllPosts();
+  try {
+    const allPosts = await getAllPosts();
 
-  res.send({
-    posts
-  });
+    const posts = allPosts.filter(post => {
+      //return posts that are active, or if the user requesting posts is the author 
+     return (post.active) || (req.user && post.author.id === req.user.id);
+    });
+
+    res.send({
+      posts
+    });
+
+  } catch ({ name, message }) {
+    next({ name, message });
+  }
 });
 
 module.exports = postsRouter;
 
 
 /*
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhbGJlcnQiLCJwYXNzd29yZCI6ImJlcnRpZTk5IiwiaWF0IjoxNjg4OTI3NTkxLCJleHAiOjE2ODg5MzExOTF9.3lEGW8AXNqTultgftYxqBAkhQZttfbToEbhZ5O2eMgw
 
-curl http://localhost:3000/api/posts -X POST -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhbGJlcnQiLCJwYXNzd29yZCI6ImJlcnRpZTk5IiwiaWF0IjoxNjg4OTI3NTkxLCJleHAiOjE2ODg5MzExOTF9.3lEGW8AXNqTultgftYxqBAkhQZttfbToEbhZ5O2eMgw' -H 'Content-Type: application/json' -d '{"title": "test post", "content": "how is this?", "tags": " #once #twice    #happy"}'
-curl http://localhost:3000/api/posts -X POST -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhbGJlcnQiLCJwYXNzd29yZCI6ImJlcnRpZTk5IiwiaWF0IjoxNjg4OTI3NTkxLCJleHAiOjE2ODg5MzExOTF9.3lEGW8AXNqTultgftYxqBAkhQZttfbToEbhZ5O2eMgw' -H 'Content-Type: application/json' -d '{"title": "I still do not like tags", "content": "CMON! why do people use them?"}'
-curl http://localhost:3000/api/posts -X POST -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhbGJlcnQiLCJwYXNzd29yZCI6ImJlcnRpZTk5IiwiaWF0IjoxNjg4OTI3NTkxLCJleHAiOjE2ODg5MzExOTF9.3lEGW8AXNqTultgftYxqBAkhQZttfbToEbhZ5O2eMgw' -H 'Content-Type: application/json' -d '{"title": "I am quite frustrated"}'
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhbGJlcnQiLCJwYXNzd29yZCI6ImJlcnRpZTk5IiwiaWF0IjoxNjg5MDEwNjk0LCJleHAiOjE2ODkwMTQyOTR9._EY2qSPF89SdpcsLqVnaJk7iSL3Vd-CYD8xxgph_0GU
 
-
-curl http://localhost:3000/api/posts/1 -X PATCH -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhbGJlcnQiLCJwYXNzd29yZCI6ImJlcnRpZTk5IiwiaWF0IjoxNjg4OTI3NTkxLCJleHAiOjE2ODg5MzExOTF9.3lEGW8AXNqTultgftYxqBAkhQZttfbToEbhZ5O2eMgw' -H 'Content-Type: application/json' -d '{"title": "updating my old stuff", "tags": "#oldisnewagain"}'
-
-curl http://localhost:3000/api/posts -X POST -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhbGJlcnQiLCJwYXNzd29yZCI6ImJlcnRpZTk5IiwiaWF0IjoxNjg4OTI3NTkxLCJleHAiOjE2ODg5MzExOTF9.3lEGW8AXNqTultgftYxqBAkhQZttfbToEbhZ5O2eMgw' -H 'Content-Type: application/json' -d '{"title": "I am quite frustrated"}'
-
+curl http://localhost:3000/api/posts -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhbGJlcnQiLCJwYXNzd29yZCI6ImJlcnRpZTk5IiwiaWF0IjoxNjg5MDEwNjk0LCJleHAiOjE2ODkwMTQyOTR9._EY2qSPF89SdpcsLqVnaJk7iSL3Vd-CYD8xxgph_0GU'
 */
