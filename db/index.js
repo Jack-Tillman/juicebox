@@ -230,7 +230,7 @@ async function createTags(tagList) {
       throw error;
   }
 }
-//step 3 : adding tags to posts - error even though I seem to have done things correctly - very predictable! 
+
 async function createPostTag(postId, tagId) {
   try {
     await client.query(`
